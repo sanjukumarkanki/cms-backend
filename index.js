@@ -36,7 +36,7 @@ connection.connect((err) => {
         return;
     }
     console.log('Connected to database as id ' + connection.threadId);
-    const createTablesQuery = `create table allleads(
+    const createTablesQuery = `create table IF NOT EXISTS allleads(
         id INT primary KEY auto_increment,
         phoneNumber BIGINT not null default 0000000000,
         callerName	 varchar(200) default 'Enter Here',
@@ -72,7 +72,7 @@ connection.connect((err) => {
         }
         console.log('Tables created successfully');
     });
-    const createTablesQuery2 = `create table followup_table(
+    const createTablesQuery2 = `create table IF NOT EXISTS followup_table(
         leadId int not null,
         followupId int ,
         leadStage TEXT,
