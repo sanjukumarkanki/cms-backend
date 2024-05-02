@@ -7,7 +7,13 @@ const cron = require('node-cron');
 const { addDays, format, isSunday } = require("date-fns");
 
 app.use(express.json());
-app.use(cors())
+// app.use(cors())
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*'); // Update * to specific origin if needed
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
 
 app.listen(3003, () => {
     console.log("Server is running on port 3003");
