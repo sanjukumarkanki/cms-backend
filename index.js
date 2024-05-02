@@ -22,12 +22,13 @@ app.listen(3003, () => {
 // });
 
 const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: ' id21984242_cion_db',
-    password: 'Appugaru@104', // Provide your MySQL password here
-    database: ' id21984242_cion_db'
+    host : 'bavbwnskgspsg4hoezuh-mysql.services.clever-cloud.com',
+    database: 'bavbwnskgspsg4hoezuh',
+    user: 'uvwarr5nxly8rt9h',
+    port : 3306,
+    password: 'ePWGgtAiz9G7TIylKiPD'
 });
+
 
 connection.connect((err) => {
     if (err) {
@@ -35,6 +36,77 @@ connection.connect((err) => {
         return;
     }
     console.log('Connected to database as id ' + connection.threadId);
+    const createTablesQuery = `create table allleads(
+        id INT primary KEY auto_increment,
+        phoneNumber BIGINT not null default 0000000000,
+        callerName	 varchar(200) default 'Enter Here',
+        patientName varchar(200) default 'Enter Here',
+        dateOfContact   DATE ,
+        leadChannel	enum("Web Form", "Whatsapp",
+        "call","Just Dial","Walk Im", "Referral",
+        "Gmb", "Social Media","Youtube"),
+        campaign enum("Organic", "Op","Pet Ct",
+        "Biopsy", "Surgery", "Influencer",
+        "Pediatric"),
+        coachName	enum("Mustafa", "Rani", "Ruthvik"),
+        age INT,
+        gender enum("Male","Female","Others"),
+        typeOfCancer	varchar(200),
+        location TEXT,
+        email TEXT,
+        relationsToPatient TEXT,
+        coachNotes TEXT,
+        inboundOutbound TEXT,
+        relevant boolean default 0,
+        interested boolean default 1,
+        conv boolean default 0,
+        preOp boolean default 0,
+        level enum("Very Hot", "Hot", "Cold",
+        "Closed"),
+        stage enum("Lead", "Op","Diag","Ip")
+    );`
+    connection.query(createTablesQuery, (error, results, fields) => {
+        if (error) {
+            console.error('Error creating tables: ' + error.stack);
+            return;
+        }
+        console.log('Tables created successfully');
+    });
+    const createTablesQuery2 = `create table followup_table(
+        leadId int not null,
+        followupId int ,
+        leadStage TEXT,
+        time TIME DEFAULT '09:30:00',
+        date DATE,
+        status enum("Scheduled", "Booked", "Missed", "Done", "Cancelled"),
+        coachNotes TEXT
+    );`
+    connection.query(createTablesQuery2, (error, results, fields) => {
+        if (error) {
+            console.error('Error creating tables: ' + error.stack);
+            return;
+        }
+        console.log('Tables created successfully');
+    });
+
+
+    const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
+        coachName, age, gender, typeOfcancer, location, email, relationsToPatient, coachNotes, inboundOutbound, relevant, 
+        interested, conv, preOp, level, stage) VALUES
+       (1234567890,  'John Doe', 'Alice Doe',  'Web Form', 'Organic', 'Rani', 45, 'Female', 'Breast Cancer', 'New York', 'alice@example.com', 'Spouse', 'Follow up after surgery', 'Inbound', true, true, true, true, 'very hot', 'LEAD'),
+       (2345678901,  'Jane Smith', 'Bob Smith',  'Whatsapp', 'Pet Ct', 'Mustafa', 60, 'Male', 'Prostate Cancer', 'Los Angeles', 'bob@example.com', 'Sibling', 'Interested in treatment options', 'Outbound', true, true, false, false, 'Hot', 'Op'),
+       (3456789012,  'Emily Brown', 'Chris Brown',  'CALL', 'Biopsy', 'Ruthvik', 55, 'Male', 'Lung Cancer', 'Chicago', 'chris@example.com', 'Child', 'Needs further tests', 'Inbound', false, true, false, true, 'cold', 'Diag'),
+       (4567890123,  'Michael Johnson', 'David Johnson',  'Just Dial', 'Biopsy', 'Rani',  70, 'Male', 'Colorectal Cancer', 'Houston', 'david@example.com', 'Friend', 'Not sure about treatment options', 'Outbound', true, false, false, false, 'closed', 'IP');
+       `
+    connection.query(insertQuery, (error, results, fields) => {
+        if (error) {
+            console.error('Error creating tables: ' + error.stack);
+            return;
+        }
+        console.log('Tables created successfully');
+    });
+
+
 });
 
 // Route to get leads
