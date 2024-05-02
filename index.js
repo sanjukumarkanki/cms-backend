@@ -444,12 +444,19 @@ app.get("/dashboard-followups", async ( req,res) => {
         const fetchDetails = await executeQuery(`SELECT allleads.id, allleads.patientName, allleads.stage, allleads.level, allleads.phoneNumber,  followup_table.coachNotes, followup_table.followupId,followup_table.time, allleads.coachName
         FROM allleads
         INNER JOIN followup_table ON allleads.id = followup_table.leadId
-        WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed" ;`);
+        WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed"  
+        ORDER BY 
+          CASE allleads.level 
+            WHEN 'Very Hot' THEN 1 
+            WHEN 'Hot' THEN 2 
+            WHEN 'Cold' THEN 3 
+            WHEN 'Closed' THEN 4 
+            ELSE 5 
+          END; ;`);
         res.status(200).send(fetchDetails)
     }
     catch(err){
         res.status(400).send(err)
-        // console.log(err)
     }
 })
 
