@@ -7,7 +7,6 @@ const cron = require('node-cron');
 const { addDays, format, isSunday } = require("date-fns");
 
 app.use(express.json());
-// app.use(cors())
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // Update * to specific origin if needed
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -19,13 +18,6 @@ app.listen(3003, () => {
     console.log("Server is running on port 3003");
 });
 
-// const connection = mysql.createConnection({
-//     host: 'https://cms-backend-5297.onrender.com',
-//     port: 3306,
-//     user: 'root',
-//     password: 'Appugaru@104', // Provide your MySQL password here
-//     database: 'ciondatabase'
-// });
 
 const connection = mysql.createConnection({
     host : 'bavbwnskgspsg4hoezuh-mysql.services.clever-cloud.com',
@@ -118,16 +110,15 @@ connection.connect((err) => {
 // Route to get leads
 app.get("/get-leads", async (req, res) => {
     try {
-        const rows = await executeQuery(`SELECT * FROM allleads ORDER BY id DESC`);
+        const rows = await executeQuery(`SELECT * FROM allleads ORDER BY id DESC `);
         const convertedArray = rows.map(each => {
             const date = new Date(each.dateOfContact); 
-            const formattedDate = date.toISOString().split('T')[0]; 
             return {
                 id: each.id,
                 phoneNumber: each.phoneNumber,
                 callerName: each.callerName,
                 patientName: each.patientName,
-                dateOfContact: formattedDate, // Use the formatted date
+                dateOfContact: formatDate(date), // Use the formatted date
                 leadChannel: each.leadChannel,
                 campaign: each.campaign,
                 coachName: each.coachName,
@@ -197,7 +188,6 @@ app.post("/add-lead", async (req, res) => {
       phoneNumber,
       callerName,
       age,
-      campaign,
       coachNotes,
       coachName,
       conv,
@@ -213,21 +203,28 @@ app.post("/add-lead", async (req, res) => {
       relationsToPatient,
       relevant,
       stage,
-      typeOfCancer
+      typeOfCancer,
+      dateOfContact
+      
     } = req.body;
+
+    let addOneDay = new Date(dateOfContact);
+    addOneDay.setDate(addOneDay.getDate() + 1)
+    if(addOneDay.getDay() === 0){
+        addOneDay.setDate(addOneDay.getDate() + 1);
+    }
 
     try {
       const rows = await executeQuery(`
-        INSERT INTO allleads (phoneNumber, callerName, age, campaign, coachName, conv,
+        INSERT INTO allleads (phoneNumber, callerName, age,  coachName, conv,
            email, gender, inboundOutbound, interested, coachNotes, leadchannel, level, location, patientName,
            preOp, relationsToPatient, relevant, stage,  typeOfCancer, dateOfContact)
         VALUES (
-         ${parseInt(phoneNumber)}, '${callerName}', ${age}, '${campaign}', '${coachName}', '${conv}',
+         ${parseInt(phoneNumber)}, '${callerName}', ${age},  '${coachName}', '${conv}',
          '${email}', '${gender}', '${inboundOutbound}', '${interested}', '${coachNotes}', '${leadChannel}', '${level}', '${location}', '${patientName}',
-         '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', now()
+         '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', '${formatDate(addOneDay)}'
         );
       `);
-  
       res.send({ message: "New Lead Added Successfully" });
     } catch (err) {
       res.status(500).send({ message: err.message });
@@ -238,7 +235,7 @@ app.post("/add-lead", async (req, res) => {
   
 app.put("/update-lead", async (req, res) => {
     const { field, id, value, followupId } = req.body;
-    console.log(req.body, 'update-lead')
+    console.log(req.body, 'lead change')
     async function updateEachCell(){
         const rows = await executeQuery(`SELECT * FROM allleads WHERE id = ${id}`);
         if(rows.length > 0){
@@ -266,16 +263,14 @@ app.put("/update-lead", async (req, res) => {
 
 app.put("/update-followup-lead", async (req, res) => {
     const { field, id, value, followupId, leadStage } = req.body;
+    console.log(req.body, 'body')
     try {
-        if(field === "date"  ){
+        if(field === "date"){
             const getAllLeadsValues = await executeQuery(`SELECT * FROM followup_table WHERE leadId = ${id} AND followupId = ${followupId}`)
             const updatedDate = new Date(value);
             if(getAllLeadsValues[0].status === "Scheduled"){
                 const getallLEadFollowup = await executeQuery(`SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId } AND 4`);
                 const followupDates = [formatDate(updatedDate)]
-                console.log(getallLEadFollowup, 'fdf', getallLEadFollowup.length)
-                console.log(followupDates)
-
                 function getNextBusinessDay(startDate, days) {
                     let currentDate = startDate;
                     let count = 0;
@@ -430,6 +425,7 @@ app.get("/patient-followups/:id", async (req,res) => {
                 status: each.status,
 
         }));
+        console.log(convertedArray,'ddd')
 
         res.status(200).json(convertedArray);
     } catch (err) {
@@ -444,19 +440,12 @@ app.get("/dashboard-followups", async ( req,res) => {
         const fetchDetails = await executeQuery(`SELECT allleads.id, allleads.patientName, allleads.stage, allleads.level, allleads.phoneNumber,  followup_table.coachNotes, followup_table.followupId,followup_table.time, allleads.coachName
         FROM allleads
         INNER JOIN followup_table ON allleads.id = followup_table.leadId
-        WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed"  
-        ORDER BY 
-          CASE allleads.level 
-            WHEN 'Very Hot' THEN 1 
-            WHEN 'Hot' THEN 2 
-            WHEN 'Cold' THEN 3 
-            WHEN 'Closed' THEN 4 
-            ELSE 5 
-          END; ;`);
+        WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed" ;`);
         res.status(200).send(fetchDetails)
     }
     catch(err){
         res.status(400).send(err)
+        // console.log(err)
     }
 })
 
