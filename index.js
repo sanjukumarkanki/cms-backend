@@ -421,7 +421,7 @@ app.get("/patient-followups/:id", async (req,res) => {
     try{
         const sql = await executeQuery( `SELECT * FROM followup_table WHERE leadId = ${id} AND status != 'Cancelled' ORDER BY date DESC`);
         const convertedArray = sql.map((each, index) => ({
-                fuLead : `${each.leadStage - index} `,
+                fuLead : `${each.leadStage} ${each.followupId}`,
                 leadId: each.leadId,
                 leadStage: each.leadStage,
                 followupId : each.followupId,
