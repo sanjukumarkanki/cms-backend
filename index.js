@@ -13,12 +13,20 @@ app.listen(3003, () => {
     console.log("Server is running on port 3003");
 });
 
+// const connection = mysql.createConnection({
+//     host: 'https://cms-backend-5297.onrender.com',
+//     port: 3306,
+//     user: 'root',
+//     password: 'Appugaru@104', // Provide your MySQL password here
+//     database: 'ciondatabase'
+// });
+
 const connection = mysql.createConnection({
-    host: 'https://cms-backend-5297.onrender.com',
+    host: 'localhost',
     port: 3306,
-    user: 'root',
+    user: ' id21984242_cion_db',
     password: 'Appugaru@104', // Provide your MySQL password here
-    database: 'ciondatabase'
+    database: ' id21984242_cion_db'
 });
 
 connection.connect((err) => {
