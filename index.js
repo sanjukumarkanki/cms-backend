@@ -118,7 +118,7 @@ connection.connect((err) => {
 // Route to get leads
 app.get("/get-leads", async (req, res) => {
     try {
-        const rows = await executeQuery(`SELECT * FROM allleads `);
+        const rows = await executeQuery(`SELECT * FROM allleads ORDER BY id DESC`);
         const convertedArray = rows.map(each => {
             const date = new Date(each.dateOfContact); 
             const formattedDate = date.toISOString().split('T')[0]; 
@@ -421,7 +421,7 @@ app.get("/patient-followups/:id", async (req,res) => {
     try{
         const sql = await executeQuery( `SELECT * FROM followup_table WHERE leadId = ${id} AND status != 'Cancelled' ORDER BY date DESC`);
         const convertedArray = sql.map((each, index) => ({
-                fuLead : `${each.leadStage} ${index+1}`,
+                fuLead : `${each.leadStage - index} `,
                 leadId: each.leadId,
                 leadStage: each.leadStage,
                 followupId : each.followupId,
