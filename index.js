@@ -14,7 +14,7 @@ app.listen(3003, () => {
 });
 
 const connection = mysql.createConnection({
-    host: 'localhost',
+    host: 'https://cms-backend-5297.onrender.com',
     port: 3306,
     user: 'root',
     password: 'Appugaru@104', // Provide your MySQL password here
