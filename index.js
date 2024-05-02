@@ -467,6 +467,36 @@ function executeQuery(sql) {
 }
 
 
+// Route get all followups
+app.get("/day-wise-followups/:date", async (req,res) => {
+    const {date} = req.params
+    try{
+        const fetchDetails = await executeQuery(`SELECT 
+        allleads.id,allleads.callerName,  allleads.patientName, allleads.stage, followup_table.coachNotes,followup_table.followupId, followup_table.followupId,followup_table.date
+        FROM ciondatabase.allleads
+        INNER JOIN followup_table ON allleads.id = followup_table.leadId
+        WHERE  followup_table.date = '${date}'  AND followup_table.status != "Cancelled" AND followup_table.status != "Done" AND allleads.level != "closed"
+        ORDER BY allleads.id DESC
+        ;`);
+        const convertedArray = fetchDetails.map(each =>({
+            id : each.id,
+            callerName : each.callerName,
+            coachNotes : each.coachNotes,
+            followupId : each.followupId,
+            date : formatDate(each.date),
+            patientName : each.patientName,
+            stage : `${each.stage} ${each.followupId}`
+        }))
+        res.status(200).send(convertedArray)
+        console.log(fetchDetails,)
+    }
+    catch(err){
+        res.status(400).send(err)
+        // console.log(err)
+    }
+})
+
+
 
 async function deleteFolloups() {
     try {
