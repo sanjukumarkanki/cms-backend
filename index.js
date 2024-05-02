@@ -442,7 +442,7 @@ app.get("/patient-followups/:id", async (req,res) => {
 app.get("/dashboard-followups", async ( req,res) => {
     try{
         const fetchDetails = await executeQuery(`SELECT allleads.id, allleads.patientName, allleads.stage, allleads.level, allleads.phoneNumber,  followup_table.coachNotes, followup_table.followupId,followup_table.time, allleads.coachName
-        FROM ciondatabase.allleads
+        FROM allleads
         INNER JOIN followup_table ON allleads.id = followup_table.leadId
         WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed" ;`);
         res.status(200).send(fetchDetails)
