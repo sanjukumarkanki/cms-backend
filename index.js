@@ -269,11 +269,11 @@ app.post("/add-lead", async (req, res) => {
 
     try {
       const rows = await executeQuery(`
-        INSERT INTO allleads (phoneNumber, callerName, age,  coachName, conv,
+        INSERT INTO allleads (phoneNumber, callerName, age,  coachName,campaign, conv,
            email, gender, inboundOutbound, interested, coachNotes, leadchannel, level, location, patientName,
            preOp, relationsToPatient, relevant, stage,  typeOfCancer, dateOfContact)
         VALUES (
-         ${parseInt(phoneNumber)}, '${callerName}', ${age},  '${coachName}', '${conv}',
+         ${parseInt(phoneNumber)}, '${callerName}', ${age},  '${coachName}', '${campaign}', '${conv}',
          '${email}', '${gender}', '${inboundOutbound}', '${interested}', '${coachNotes}', '${leadChannel}', '${level}', '${location}', '${patientName}',
          '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', '${formatDate(addOneDay)}'
         );
