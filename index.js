@@ -6,7 +6,6 @@ const mysql = require('mysql');
 const cron = require('node-cron');
 const { addDays, format, isSunday } = require("date-fns");
 
-
 app.use(express.json());
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*'); // Update * to specific origin if needed
