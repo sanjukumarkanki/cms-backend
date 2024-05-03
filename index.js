@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const cors = require("cors")
-const mysql = require('mysql');
+const mysql = require('mysql')
 
 const cron = require('node-cron');
 const { addDays, format, isSunday } = require("date-fns");
