@@ -172,6 +172,7 @@ connection.connect((err) => {
 app.get("/get-leads", async (req, res) => {
     try {
         const rows = await executeQuery(`SELECT * FROM allleads ORDER BY id DESC `);
+        console.log(rows)
         const convertedArray = rows.map(each => {
             const date = new Date(each.dateOfContact); 
             return {
@@ -296,8 +297,6 @@ app.post("/add-lead", async (req, res) => {
 app.put("/update-lead", async (req, res) => {
     const { field, id, value, followupId } = req.body;
 
-
-    console.log(req.body, 'lead change')
     async function updateEachCell(){
         const rows = await executeQuery(`SELECT * FROM allleads WHERE id = ${id}`);
         if(rows.length > 0){
@@ -323,7 +322,6 @@ app.put("/update-lead", async (req, res) => {
 
 app.put("/update-followup-lead", async (req, res) => {
     const { field, id, value, followupId, leadStage } = req.body;
-    console.log(req.body, 'body')
     try {
         if(field === "date"){
             const getAllLeadsValues = await executeQuery(`SELECT * FROM followup_table WHERE leadId = ${id} AND followupId = ${followupId}`)
@@ -479,7 +477,6 @@ app.get("/patient-followups/:id", async (req,res) => {
                 status: each.status,
 
         }));
-        console.log(convertedArray,'ddd')
 
         res.status(200).json(convertedArray);
     } catch (err) {
@@ -523,7 +520,6 @@ app.get("/dashboard-followups", async ( req,res) => {
     ;
     `);
         res.status(200).send(fetchDetails)
-        console.log(fetchDetails)
     }
     catch(err){
         res.status(400).send(err)
@@ -578,7 +574,7 @@ async function deleteFolloups() {
         const response = await executeQuery(`
         UPDATE followup_table
         SET status='Missed'
-        WHERE DATE(date) = DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND  status = "Scheduled"`);
+        WHERE DATE(date) = DATE_ADD(CURDATE()) AND  status = "Scheduled"`);
     } catch (error) {
         res.status(400).send({message : "The Scheduled Job Is cancelled"})
     }
@@ -659,58 +655,66 @@ connection.connect((err) => {
 
 
     
+
+
+const createTablesQuery = `SELECT * FROM  allleads`
+connection.query(createTablesQuery, (error, results, fields) => {
+    if (error) {
+        console.error('Error creating tables: ' + error.stack);
+    }
+    console.log(results)
+});
+
     
 
-    const createTablesQuery = `create table IF NOT EXISTS allleads(
-        id INT primary KEY auto_increment,
-        phoneNumber BIGINT not null default 0000000000,
-        callerName	 varchar(200) default 'Enter Here',
-        patientName varchar(200) default 'Enter Here',
-        dateOfContact   DATE ,
-        leadChannel	enum("Web Form", "Whatsapp",
-        "call","Just Dial","Walk In", "Referral",
-        "Gmb", "Social Media","Youtube"),
-        campaign enum("Organic", "Op","Pet Ct",
-        "Biopsy", "Surgery", "Influencer",
-        "Pediatric"),
-        coachName	enum("Mustafa", "Rani", "Ruthvik"),
-        age INT,
-        gender enum("Male","Female","Others"),
-        typeOfCancer	varchar(200),
-        location TEXT,
-        email TEXT,
-        relationsToPatient TEXT,
-        coachNotes TEXT,
-        inboundOutbound TEXT,
-        relevant boolean default 0,
-        interested boolean default 1,
-        conv boolean default 0,
-        preOp boolean default 0,
-        level enum("Very Hot", "Hot", "Cold",
-        "Closed"),
-        stage enum("Lead", "Op","Diag","Ip")
-    );`
-    connection.query(createTablesQuery, (error, results, fields) => {
-        if (error) {
-            console.error('Error creating tables: ' + error.stack);
-            return;
-        }
-    });
-    const createTablesQuery2 = `create table IF NOT EXISTS followup_table(
-        leadId int not null,
-        followupId int ,
-        leadStage TEXT,
-        time TIME DEFAULT '09:30:00',
-        date DATE,
-        status enum("Scheduled",  "Missed", "Done", "Cancelled"),
-        coachNotes TEXT
-    );`
-    connection.query(createTablesQuery2, (error, results, fields) => {
-        if (error) {
-            console.error('Error creating tables: ' + error.stack);
-            return;
-        }
-    });
+    // const createTablesQuery = `create table IF NOT EXISTS allleads(
+    //     id INT primary KEY auto_increment,
+    //     phoneNumber BIGINT not null default 0000000000,
+    //     callerName	 varchar(200) default 'Enter Here',
+    //     patientName varchar(200) default 'Enter Here',
+    //     dateOfContact   DATE ,
+    //     leadChannel	enum("Web Form", "Whatsapp",
+    //     "call","Just Dial","Walk In", "Referral",
+    //     "Gmb", "Social Media","Youtube"),
+    //     campaign enum("Organic", "Op","Pet Ct",
+    //     "Biopsy", "Surgery", "Influencer",
+    //     "Pediatric"),
+    //     coachName	enum("Mustafa", "Rani", "Ruthvik"),
+    //     age INT,
+    //     gender enum("Male","Female","Others"),
+    //     typeOfCancer	varchar(200),
+    //     location TEXT,
+    //     email TEXT,
+    //     relationsToPatient TEXT,
+    //     coachNotes TEXT,
+    //     inboundOutbound TEXT,
+    //     relevant boolean default 0,
+    //     interested boolean default 1,
+    //     conv boolean default 0,
+    //     preOp boolean default 0,
+    //     level enum("Very Hot", "Hot", "Cold",
+    //     "Closed"),
+    //     stage enum("Lead", "Op","Diag","Ip")
+    // );`
+    // connection.query(createTablesQuery, (error, results, fields) => {
+    //     if (error) {
+    //         console.error('Error creating tables: ' + error.stack);
+    //     }
+    // });
+    // const createTablesQuery2 = `create table IF NOT EXISTS followup_table(
+    //     leadId int not null,
+    //     followupId int ,
+    //     leadStage TEXT,
+    //     time TIME DEFAULT '09:30:00',
+    //     date DATE,
+    //     status enum("Scheduled",  "Missed", "Done", "Cancelled"),
+    //     coachNotes TEXT
+    // );`
+    // connection.query(createTablesQuery2, (error, results, fields) => {
+    //     if (error) {
+    //         console.error('Error creating tables: ' + error.stack);
+    //     }
+    // });
 
 
     // const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
@@ -861,8 +865,6 @@ app.post("/add-lead", async (req, res) => {
 app.put("/update-lead", async (req, res) => {
     const { field, id, value, followupId } = req.body;
 
-
-    console.log(req.body, 'lead change')
     async function updateEachCell(){
         const rows = await executeQuery(`SELECT * FROM allleads WHERE id = ${id}`);
         if(rows.length > 0){
@@ -888,7 +890,6 @@ app.put("/update-lead", async (req, res) => {
 
 app.put("/update-followup-lead", async (req, res) => {
     const { field, id, value, followupId, leadStage } = req.body;
-    console.log(req.body, 'body')
     try {
         if(field === "date"){
             const getAllLeadsValues = await executeQuery(`SELECT * FROM followup_table WHERE leadId = ${id} AND followupId = ${followupId}`)
@@ -1044,7 +1045,7 @@ app.get("/patient-followups/:id", async (req,res) => {
                 status: each.status,
 
         }));
-        console.log(convertedArray,'ddd')
+
 
         res.status(200).json(convertedArray);
     } catch (err) {
@@ -1088,7 +1089,7 @@ app.get("/dashboard-followups", async ( req,res) => {
     ;
     `);
         res.status(200).send(fetchDetails)
-        console.log(fetchDetails)
+
     }
     catch(err){
         res.status(400).send(err)
@@ -1153,5 +1154,4 @@ cron.schedule('54 09 * * *', () => {
     deleteFolloups();
 }, {
     scheduled: true,
-   
 });
