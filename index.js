@@ -34,6 +34,50 @@ connection.connect((err) => {
         return;
     }
     console.log('Connected to database as id ' + connection.threadId);
+
+//     const date = new Date();
+//     const dateConvert = formatDate(date)
+//     const getTime = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+//     const createTablesQuery = `SELECT 
+//     allleads.id, 
+//     allleads.patientName, 
+//     allleads.stage, 
+//     allleads.level, 
+//     allleads.phoneNumber,  
+//     DATE_FORMAT(followup_table.date, '%Y-%m-%d') AS date,  
+//     followup_table.coachNotes, 
+//     followup_table.followupId,
+//     followup_table.time, 
+//     allleads.coachName
+// FROM 
+//     allleads
+// INNER JOIN 
+//     followup_table 
+// ON 
+//     allleads.id = followup_table.leadId
+//     WHERE date = '${dateConvert}' AND time <= '${getTime}'
+//     ORDER BY 
+//     CASE allleads.level 
+//       WHEN 'Very Hot' THEN 1 
+//       WHEN 'Hot' THEN 2 
+//       WHEN 'Cold' THEN 3 
+//       WHEN 'Closed' THEN 4 
+//       ELSE 5  
+//     END;
+// ;
+// `
+//     connection.query(createTablesQuery, (error, results, fields) => {
+//         if (error) {
+//             console.error('Error creating tables: ' + error.stack);
+//             return;
+//         }
+//         console.log(results);
+//     });
+
+
+    
+    
+
     const createTablesQuery = `create table IF NOT EXISTS allleads(
         id INT primary KEY auto_increment,
         phoneNumber BIGINT not null default 0000000000,
@@ -41,7 +85,7 @@ connection.connect((err) => {
         patientName varchar(200) default 'Enter Here',
         dateOfContact   DATE ,
         leadChannel	enum("Web Form", "Whatsapp",
-        "call","Just Dial","Walk Im", "Referral",
+        "call","Just Dial","Walk In", "Referral",
         "Gmb", "Social Media","Youtube"),
         campaign enum("Organic", "Op","Pet Ct",
         "Biopsy", "Surgery", "Influencer",
@@ -68,7 +112,6 @@ connection.connect((err) => {
             console.error('Error creating tables: ' + error.stack);
             return;
         }
-        console.log('Tables created successfully');
     });
     const createTablesQuery2 = `create table IF NOT EXISTS followup_table(
         leadId int not null,
@@ -76,7 +119,7 @@ connection.connect((err) => {
         leadStage TEXT,
         time TIME DEFAULT '09:30:00',
         date DATE,
-        status enum("Scheduled", "Booked", "Missed", "Done", "Cancelled"),
+        status enum("Scheduled",  "Missed", "Done", "Cancelled"),
         coachNotes TEXT
     );`
     connection.query(createTablesQuery2, (error, results, fields) => {
@@ -84,7 +127,6 @@ connection.connect((err) => {
             console.error('Error creating tables: ' + error.stack);
             return;
         }
-        console.log('Tables created successfully');
     });
 
 
@@ -106,6 +148,7 @@ connection.connect((err) => {
 
 
 });
+
 
 // Route to get leads
 app.get("/get-leads", async (req, res) => {
@@ -190,6 +233,7 @@ app.post("/add-lead", async (req, res) => {
       age,
       coachNotes,
       coachName,
+      campaign,
       conv,
       email,
       gender,
@@ -205,7 +249,6 @@ app.post("/add-lead", async (req, res) => {
       stage,
       typeOfCancer,
       dateOfContact
-      
     } = req.body;
 
     let addOneDay = new Date(dateOfContact);
@@ -228,13 +271,14 @@ app.post("/add-lead", async (req, res) => {
       res.send({ message: "New Lead Added Successfully" });
     } catch (err) {
       res.status(500).send({ message: err.message });
-      console.log(err);
     }
 });
 
   
 app.put("/update-lead", async (req, res) => {
     const { field, id, value, followupId } = req.body;
+
+
     console.log(req.body, 'lead change')
     async function updateEachCell(){
         const rows = await executeQuery(`SELECT * FROM allleads WHERE id = ${id}`);
@@ -248,14 +292,12 @@ app.put("/update-lead", async (req, res) => {
     try {       
         if(field === "level" && value === "closed"){
             const updateStatus = await executeQuery(`UPDATE followup_table SET status='Cancelled' WHERE leadId = ${id} AND followupId = ${followupId}`);
-            console.log(updateStatus,'update');
             updateEachCell()
         }else{
            updateEachCell()
         }
 
     } catch (err) {
-        console.error(err);
         res.status(500).send("Failed to update lead");
     }
 });
@@ -329,16 +371,14 @@ app.post("/add-followup", async (req, res) => {
     let followupDates = [formatDate(currentDate)];
     const getTheLeadStageValues = await executeQuery(`SELECT * FROM followup_table WHERE leadId = ${id}`);
     const filterStageRows = getTheLeadStageValues.filter(each => each.leadStage === stage);
-
     if (filterStageRows.length > 0) {
-        res.status(404).send({ message: "The Lead Stage Already Exists" });
+        res.status(404).send({ message: "This lead Id Already Exsits" });
     } else {
         try {
             if (stage === "Op") {
                 const filterPreviousRows = getTheLeadStageValues.filter(each => each.leadStage === "Lead" && each.status !== "Cancelled");
-                console.log(filterPreviousRows, 'previous');
                 const updateRows = await executeQuery(`UPDATE followup_table SET status = 'Cancelled' WHERE leadId = ${id} AND leadStage = 'Lead' AND status != 'Cancelled'`);
-                console.log(updateRows, 'update');
+
             } else if (stage === "Diag") {
                 // Update follow-up records
                 const updateRows = await executeQuery(`
@@ -348,8 +388,6 @@ app.post("/add-followup", async (req, res) => {
                     AND leadStage IN ('Lead', 'Op') 
                     AND status != 'Cancelled'
                 `);
-
-                console.log(updateRows, 'update');
             }
             else if (stage === "Ip"){
                 const updateRows = await executeQuery(`
@@ -359,8 +397,6 @@ app.post("/add-followup", async (req, res) => {
                 AND leadStage IN ('Lead', 'Op', 'Diag') 
                 AND status != 'Cancelled'
             `);
-
-            console.log(updateRows, 'update');
             }
 
             const daysDifferance = stage === "Ip" ? 14 : 1
@@ -436,16 +472,43 @@ app.get("/patient-followups/:id", async (req,res) => {
 
 
 app.get("/dashboard-followups", async ( req,res) => {
+    const date = new Date();
+    const dateConvert = formatDate(date)
+    const getTime = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
     try{
-        const fetchDetails = await executeQuery(`SELECT allleads.id, allleads.patientName, allleads.stage, allleads.level, allleads.phoneNumber,  followup_table.coachNotes, followup_table.followupId,followup_table.time, allleads.coachName
-        FROM allleads
-        INNER JOIN followup_table ON allleads.id = followup_table.leadId
-        WHERE DATE(followup_table.date) = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND followup_table.status != "Cancelled" AND allleads.level != "closed" ;`);
+        const fetchDetails = await executeQuery(`SELECT 
+        allleads.id, 
+        allleads.patientName, 
+        allleads.stage, 
+        allleads.level, 
+        allleads.phoneNumber,  
+        DATE_FORMAT(followup_table.date, '%Y-%m-%d') AS date,  
+        followup_table.coachNotes, 
+        followup_table.followupId,
+        followup_table.time, 
+        allleads.coachName
+    FROM 
+        allleads
+    INNER JOIN 
+        followup_table 
+    ON 
+        allleads.id = followup_table.leadId
+        WHERE date = '${dateConvert}' AND time <= '${getTime}'
+        ORDER BY 
+        CASE allleads.level 
+          WHEN 'Very Hot' THEN 1 
+          WHEN 'Hot' THEN 2 
+          WHEN 'Cold' THEN 3 
+          WHEN 'Closed' THEN 4 
+          ELSE 5  
+        END;
+    ;
+    `);
         res.status(200).send(fetchDetails)
+        console.log(fetchDetails)
     }
     catch(err){
         res.status(400).send(err)
-        // console.log(err)
     }
 })
 
@@ -484,11 +547,9 @@ app.get("/day-wise-followups/:date", async (req,res) => {
             stage : `${each.stage} ${each.followupId}`
         }))
         res.status(200).send(convertedArray)
-        console.log(fetchDetails,)
     }
     catch(err){
         res.status(400).send(err)
-        // console.log(err)
     }
 })
 
@@ -500,10 +561,8 @@ async function deleteFolloups() {
         UPDATE followup_table
         SET status='Missed'
         WHERE DATE(date) = DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND  status = "Scheduled"`);
-        console.log(response)
     } catch (error) {
-        console.error('Error deleting data:', error.message);
-        console.log(err)
+        res.status(400).send({message : "The Scheduled Job Is cancelled"})
     }
 }
 
