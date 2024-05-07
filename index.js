@@ -30,14 +30,23 @@ connection.connect((err) => {
   }
   console.log("Connected to database as id " + connection.threadId);
 
+  // const createTablesQuery = `DROP TABLE followup_table`;
+  // connection.query(createTablesQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating allleads table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log("Table 'allleads' created successfully");
+  // });
+
   const createTablesQuery = `CREATE TABLE IF NOT EXISTS allleads (
     id INT PRIMARY KEY AUTO_INCREMENT,
     phoneNumber BIGINT NOT NULL DEFAULT '0000000000',
     callerName VARCHAR(200) DEFAULT 'Enter Here',
     patientName VARCHAR(200) DEFAULT 'Enter Here',
     dateOfContact DATE,
-    leadChannel ENUM('Web Form', 'Whatsapp', 'Call', 'Just Dial', 'Walk In', 'Referral', 'Gmb', 'Social Media', 'Youtube'),
-    campaign ENUM('Organic', 'Op', 'Pet Ct', 'Biopsy', 'Surgery', 'Influencer', 'Pediatric'),
+    leadChannel ENUM('Web Form', 'WhatsApp', 'Call', 'Just Dial', 'Walk In', 'Referral', 'GMB', 'Social Media', 'YouTube'),
+    campaign ENUM('Organic', 'Op', 'PET CT', 'Biopsy', 'Surgery', 'Influencer', 'Pediatric'),
     coachName ENUM('Mustafa', 'Rani', 'Ruthvik'),
     age INT,
     gender ENUM('Male', 'Female', 'Others'),
@@ -78,6 +87,22 @@ connection.connect((err) => {
     }
     console.log("Table 'followup_table' created successfully");
   });
+
+  // const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
+  //    coachName, age, gender, typeOfcancer, location, email, relationsToPatient, coachNotes, inboundOutbound, relevant,
+  //     interested, conv, preOp, level, stage) VALUES
+  //    (1234567890,  'John Doe', 'Alice Doe',  'Web Form', 'Organic', 'Rani', 45, 'Female', 'Breast Cancer', 'New York', 'alice@example.com', 'Spouse', 'Follow up after surgery', 'Inbound', true, true, true, true, 'very hot', 'LEAD'),
+  //    (2345678901,  'Jane Smith', 'Bob Smith',  'WhatsApp', 'PET CT', 'Mustafa', 60, 'Male', 'Prostate Cancer', 'Los Angeles', 'bob@example.com', 'Sibling', 'Interested in treatment options', 'Outbound', true, true, false, false, 'Hot', 'Op'),
+  //    (3456789012,  'Emily Brown', 'Chris Brown',  'CALL', 'Biopsy', 'Ruthvik', 55, 'Male', 'Lung Cancer', 'Chicago', 'chris@example.com', 'Child', 'Needs further tests', 'Inbound', false, true, false, true, 'cold', 'Diag'),
+  //    (4567890123,  'Michael Johnson', 'David Johnson',  'Just Dial', 'Biopsy', 'Rani',  70, 'Male', 'Colorectal Cancer', 'Houston', 'david@example.com', 'Friend', 'Not sure about treatment options', 'Outbound', true, false, false, false, 'closed', 'IP');
+  //    `;
+  // connection.query(insertQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating tables: " + error.stack);
+  //     return;
+  //   }
+  //   console.log("Tables created successfully");
+  // });
 });
 
 // Route to get leads
@@ -191,13 +216,13 @@ app.post("/add-lead", async (req, res) => {
 
   try {
     const rows = await executeQuery(`
-        INSERT INTO allleads (phoneNumber, callerName, age,  coachName, conv,
+        INSERT INTO allleads (phoneNumber, callerName, campaign, age,  coachName, conv,
            email, gender, inboundOutbound, interested, coachNotes, leadchannel, level, location, patientName,
            preOp, relationsToPatient, relevant, stage,  typeOfCancer, dateOfContact)
         VALUES (
          ${parseInt(
            phoneNumber
-         )}, '${callerName}', ${age},  '${coachName}', '${conv}',
+         )}, '${callerName}','${campaign}', ${age},   '${coachName}',  '${conv}',
          '${email}', '${gender}', '${inboundOutbound}', '${interested}', '${coachNotes}', '${leadChannel}', '${level}', '${location}', '${patientName}',
          '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', '${formatDate(
       addOneDay
@@ -212,30 +237,34 @@ app.post("/add-lead", async (req, res) => {
 
 app.put("/update-lead", async (req, res) => {
   let { field, id, value, followupId } = req.body;
-  console.log(req.body);
 
   async function updateEachCell() {
-    const rows = await executeQuery(`SELECT * FROM allleads WHERE id = ${id}`);
-    if (rows.length > 0) {
-      const updateValue = await executeQuery(
-        `UPDATE allleads SET ${field}='${value}' WHERE id = ${id}`
+    try {
+      const rows = await executeQuery(
+        `SELECT * FROM allleads WHERE id = ${id}`
       );
-      res.status(200).send("Lead updated successfully");
-    } else {
-      res.status(404).send("Lead not found");
+      if (rows.length > 0) {
+        const updateValue = await executeQuery(
+          `UPDATE allleads SET ${field}='${value}' WHERE id = ${id}`
+        );
+        res.status(200).send("Lead updated successfully");
+      } else {
+        res.status(404).send("Lead not found");
+      }
+    } catch (err) {
+      res.status(500).send("Failed to updated lead");
     }
   }
   try {
     if (field === "level" && value === "Closed") {
       const updateStatus = await executeQuery(
-        `UPDATE followup_table SET status='Done' WHERE leadId = ${id} `
+        `UPDATE followup_table SET status='Cancelled' WHERE leadId = ${id} AND status = 'Scheduled'`
       );
       updateEachCell();
     } else {
       updateEachCell();
     }
   } catch (err) {
-    console.log(err);
     res.status(500).send("Failed to update lead");
   }
 });
@@ -247,46 +276,41 @@ app.put("/update-followup-lead", async (req, res) => {
       const getAllLeadsValues = await executeQuery(
         `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId = ${followupId}`
       );
-      const updatedDate = new Date(value);
-      if (getAllLeadsValues[0].status === "Scheduled") {
-        const getallLEadFollowup = await executeQuery(
-          `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId} AND 4`
-        );
-        const followupDates = [formatDate(updatedDate)];
-        function getNextBusinessDay(startDate, days) {
-          let currentDate = startDate;
-          let count = 0;
+      const getallLEadFollowup = await executeQuery(
+        `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId} AND 4`
+      );
+      const followupDates = [value];
+      function getNextBusinessDay(startDate, days) {
+        let currentDate = startDate;
+        let count = 0;
 
-          while (count < days) {
-            currentDate = addDays(currentDate, 1);
-            if (!isSunday(currentDate)) {
-              count++;
-            }
+        while (count < days) {
+          currentDate = addDays(currentDate, 1);
+          if (!isSunday(currentDate)) {
+            count++;
           }
-
-          return format(currentDate, "yyyy-MM-dd");
         }
 
-        for (let i = 1; i <= getallLEadFollowup.length - 1; i++) {
-          const today = followupDates.at(-1);
-          const nextBusinessDay = getNextBusinessDay(today, 1);
-          followupDates.push(nextBusinessDay);
-        }
-
-        const updateQueries = followupDates.map(
-          (date, index) =>
-            `UPDATE followup_table SET date = '${date}'  WHERE leadId = ${id} AND followupId = ${
-              followupId + index
-            }`
-        );
-
-        // Execute the update queries
-        for (const query of updateQueries) {
-          await executeQuery(query);
-        }
-
-        res.status(200).send({ message: "Sucessfully added" });
+        return format(currentDate, "yyyy-MM-dd");
       }
+      for (let i = 1; i <= getallLEadFollowup.length - 1; i++) {
+        const today = followupDates.at(-1);
+        const nextBusinessDay = getNextBusinessDay(today, 1);
+        followupDates.push(nextBusinessDay);
+      }
+      const updateQueries = followupDates.map(
+        (date, index) =>
+          `UPDATE followup_table SET date = '${date}'  WHERE leadId = ${id} AND followupId = ${
+            followupId + index
+          }`
+      );
+
+      // Execute the update queries
+      for (const query of updateQueries) {
+        await executeQuery(query);
+      }
+
+      res.status(200).send({ message: "Sucessfully added" });
     } else {
       const updateValue = await executeQuery(` UPDATE followup_table
             SET ${field}='${value}'
@@ -296,7 +320,6 @@ app.put("/update-followup-lead", async (req, res) => {
       res.status(200).send("Lead updated successfully");
     }
   } catch (err) {
-    console.error(err);
     res.status(500).send("Failed to update lead");
   }
 });
@@ -304,7 +327,6 @@ app.put("/update-followup-lead", async (req, res) => {
 // Route to add the follow-up
 app.post("/add-followup", async (req, res) => {
   const { id, stage } = req.body;
-  console.log(req.body);
   let currentDate = new Date();
   currentDate.setDate(currentDate.getDate() + 1);
   if (currentDate.getDay() === "0") {
@@ -431,7 +453,7 @@ app.get("/dashboard-followups", async (req, res) => {
         allleads.stage, 
         allleads.level, 
         allleads.phoneNumber,  
-        GROUP_CONCAT(DISTINCT DATE_FORMAT(followup_table.date, '%Y-%m-%d')) as formatted_dates,
+        followup_table.date,
         followup_table.coachNotes, 
         followup_table.followupId,
         followup_table.time, 
@@ -444,10 +466,10 @@ app.get("/dashboard-followups", async (req, res) => {
     ON 
         allleads.id = followup_table.leadId
     WHERE  
-        DATE_FORMAT(followup_table.date, '%Y-%m-%d') = '${dateConvert}' 
+       DATE = '${dateConvert}'
         AND time <= '${getTime}' 
-        AND status != 'Done' 
-        AND allleads.level != 'closed'
+        AND status != 'Done' AND status != 'Cancelled'
+        AND allleads.level != 'Closed'
     ORDER BY 
         CASE allleads.level 
             WHEN 'Very Hot' THEN 1 
@@ -457,8 +479,12 @@ app.get("/dashboard-followups", async (req, res) => {
             ELSE 5  
         END
     `);
-    console.log(fetchDetails);
-    res.status(200).send(fetchDetails);
+
+    if (fetchDetails.length > 0) {
+      if (fetchDetails[0].id !== null) {
+        res.status(200).send(fetchDetails);
+      }
+    }
   } catch (err) {
     res.status(400).send(err);
   }
@@ -484,7 +510,7 @@ app.get("/day-wise-followups/:date", async (req, res) => {
         allleads.id,allleads.callerName,  allleads.patientName, allleads.stage, followup_table.coachNotes,followup_table.followupId, followup_table.followupId,followup_table.date
         FROM allleads
         INNER JOIN followup_table ON allleads.id = followup_table.leadId
-        WHERE  followup_table.date = '${date}'  AND followup_table.status != "Cancelled" AND followup_table.status != "Done" AND allleads.level != "closed"
+        WHERE DATE(followup_table.date) = '${date}'     AND followup_table.status != "Cancelled" AND followup_table.status != "Done" AND allleads.level != "Closed"
         ORDER BY allleads.id DESC
         ;`);
     const convertedArray = fetchDetails.map((each) => ({
@@ -507,9 +533,9 @@ async function deleteFolloups() {
     const response = await executeQuery(`
         UPDATE followup_table
         SET status='Missed'
-        WHERE DATE(date) = DATE_ADD(CURDATE()) AND  status = "Scheduled"`);
+        WHERE DATE(date) = CURDATE() AND  status = "Scheduled"`);
   } catch (error) {
-    res.status(400).send({ message: "The Scheduled Job Is cancelled" });
+    res.status(500).send("Failed To Update Followup Table");
   }
 }
 
