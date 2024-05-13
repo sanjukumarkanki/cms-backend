@@ -677,7 +677,9 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
 app.get("/dashboard-followups", authenticateToken, async (req, res) => {
   // date.setDate(date.getDate());
   const dateConvert = formatDate(presentDate);
+  console.log(dateConvert)
   const getTime = `${presentDate.getHours()}:${presentDate.getMinutes()}:${presentDate.getSeconds()}`;
+  console.log(getTime)
   try {
     const fetchDetails = await executeQuery(` SELECT 
         allleads.id, 
@@ -711,6 +713,7 @@ app.get("/dashboard-followups", authenticateToken, async (req, res) => {
             ELSE 5  
         END
     `);
+      console.log(fetchDetails)
     res.status(200).send(fetchDetails);
   } catch (err) {
     res.status(400).send(err);
