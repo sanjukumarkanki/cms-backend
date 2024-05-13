@@ -699,19 +699,6 @@ app.get("/dashboard-followups", authenticateToken, async (req, res) => {
         followup_table 
     ON 
         allleads.id = followup_table.leadId
-    WHERE  
-      followup_table.date = '${dateConvert}'
-        AND followup_table.time <= '${getTime}' 
-        AND status != 'Done' AND status != 'Cancelled'
-        AND allleads.level != 'Closed'
-        ORDER BY 
-        CASE allleads.level 
-            WHEN 'Very Hot' THEN 1 
-            WHEN 'Hot' THEN 2 
-            WHEN 'Cold' THEN 3 
-            WHEN 'Closed' THEN 4 
-            ELSE 5  
-        END
     `);
       console.log(fetchDetails)
     res.status(200).send(fetchDetails);
