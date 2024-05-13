@@ -1,7 +1,164 @@
+// const express = require("express");
+// const app = express();
+// const cors = require("cors");
+// const mysql = require("mysql");
+
+// const cron = require("node-cron");
+// const { addDays, format, isSunday } = require("date-fns");
+
+// app.use(express.json());
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*"); // Update * to specific origin if needed
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept"
+//   );
+//   next();
+// });
+
+// app.listen(3003, () => {
+//   console.log("Server is running on port 3003");
+// });
+
+// const connection = mysql.createConnection({
+//   host: "bavbwnskgspsg4hoezuh-mysql.services.clever-cloud.com",
+//   database: "bavbwnskgspsg4hoezuh",
+//   user: "uvwarr5nxly8rt9h",
+//   port: 3306,
+//   password: "ePWGgtAiz9G7TIylKiPD",
+// });
+
+// connection.connect((err) => {
+//   if (err) {
+//     console.error("Error connecting to database: " + err.stack);
+//     return;
+//   }
+//   console.log("Connected to database as id " + connection.threadId);
+
+//   //     const date = new Date();
+//   //     const dateConvert = formatDate(date)
+//   //     const getTime = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+//   //     const createTablesQuery = `SELECT
+//   //     allleads.id,
+//   //     allleads.patientName,
+//   //     allleads.stage,
+//   //     allleads.level,
+//   //     allleads.phoneNumber,
+//   //     DATE_FORMAT(followup_table.date, '%Y-%m-%d') AS date,
+//   //     followup_table.coachNotes,
+//   //     followup_table.followupId,
+//   //     followup_table.time,
+//   //     allleads.coachName
+//   // FROM
+//   //     allleads
+//   // INNER JOIN
+//   //     followup_table
+//   // ON
+//   //     allleads.id = followup_table.leadId
+//   //     WHERE date = '${dateConvert}' AND time <= '${getTime}'
+//   //     ORDER BY
+//   //     CASE allleads.level
+//   //       WHEN 'Very Hot' THEN 1
+//   //       WHEN 'Hot' THEN 2
+//   //       WHEN 'Cold' THEN 3
+//   //       WHEN 'Closed' THEN 4
+//   //       ELSE 5
+//   //     END;
+//   // ;
+//   // `
+//   //     connection.query(createTablesQuery, (error, results, fields) => {
+//   //         if (error) {
+//   //             console.error('Error creating tables: ' + error.stack);
+//   //             return;
+//   //         }
+//   //         console.log(results);
+//   //     });
+
+//   // const createTablesQuery = `DROP TABLE allleads`
+//   // connection.query(createTablesQuery, (error, results, fields) => {
+//   //     if (error) {
+//   //         console.error('Error creating tables: ' + error.stack);
+//   //         return;
+//   //     }
+//   //     console.log(fields)
+//   //     console.log(results)
+//   // });
+
+//   const createTablesQuery = `create table IF NOT EXISTS allleads(
+//         id INT primary KEY auto_increment,
+//         phoneNumber BIGINT not null default 0000000000,
+//         callerName	 varchar(200) default 'Enter Here',
+//         patientName varchar(200) default 'Enter Here',
+//         dateOfContact   DATE ,
+//         leadChannel	enum("Web Form", "Whatsapp",
+//         "call","Just Dial","Walk In", "Referral",
+//         "Gmb", "Social Media","Youtube"),
+//         campaign enum("Organic", "Op","Pet Ct",
+//         "Biopsy", "Surgery", "Influencer",
+//         "Pediatric"),
+//         coachName	enum("Mustafa", "Rani", "Ruthvik"),
+//         age INT,
+//         gender enum("Male","Female","Others"),
+//         typeOfCancer	varchar(200),
+//         location TEXT,
+//         email TEXT,
+//         relationsToPatient TEXT,
+//         coachNotes TEXT,
+//         inboundOutbound TEXT,
+//         relevant boolean default 0,
+//         interested boolean default 1,
+//         conv boolean default 0,
+//         preOp boolean default 0,
+//         level enum("Very Hot", "Hot", "Cold",
+//         "Closed"),
+//         stage enum("Lead", "Op","Diag","Ip")
+//     );`;
+//   connection.query(createTablesQuery, (error, results, fields) => {
+//     if (error) {
+//       console.error("Error creating tables: " + error.stack);
+//       return;
+//     }
+//   });
+//   const createTablesQuery2 = `create table IF NOT EXISTS followup_table(
+//         leadId int not null,
+//         followupId int ,
+//         leadStage TEXT,
+//         time TIME DEFAULT '09:30:00',
+//         date DATE,
+//         status enum("Scheduled",  "Missed", "Done", "Cancelled"),
+//         coachNotes TEXT
+//     );`;
+//   connection.query(createTablesQuery2, (error, results, fields) => {
+//     if (error) {
+//       console.error("Error creating tables: " + error.stack);
+//       return;
+//     }
+//   });
+
+//   // const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
+//   //     coachName, age, gender, typeOfcancer, location, email, relationsToPatient, coachNotes, inboundOutbound, relevant,
+//   //     interested, conv, preOp, level, stage) VALUES
+//   //    (1234567890,  'John Doe', 'Alice Doe',  'Web Form', 'Organic', 'Rani', 45, 'Female', 'Breast Cancer', 'New York', 'alice@example.com', 'Spouse', 'Follow up after surgery', 'Inbound', true, true, true, true, 'very hot', 'LEAD'),
+//   //    (2345678901,  'Jane Smith', 'Bob Smith',  'Whatsapp', 'Pet Ct', 'Mustafa', 60, 'Male', 'Prostate Cancer', 'Los Angeles', 'bob@example.com', 'Sibling', 'Interested in treatment options', 'Outbound', true, true, false, false, 'Hot', 'Op'),
+//   //    (3456789012,  'Emily Brown', 'Chris Brown',  'CALL', 'Biopsy', 'Ruthvik', 55, 'Male', 'Lung Cancer', 'Chicago', 'chris@example.com', 'Child', 'Needs further tests', 'Inbound', false, true, false, true, 'cold', 'Diag'),
+//   //    (4567890123,  'Michael Johnson', 'David Johnson',  'Just Dial', 'Biopsy', 'Rani',  70, 'Male', 'Colorectal Cancer', 'Houston', 'david@example.com', 'Friend', 'Not sure about treatment options', 'Outbound', true, false, false, false, 'closed', 'IP');
+//   //    `
+//   // connection.query(insertQuery, (error, results, fields) => {
+//   //     if (error) {
+//   //         console.error('Error creating tables: ' + error.stack);
+//   //         return;
+//   //     }
+//   //     console.log('Tables created successfully');
+//   // });
+// });
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const mysql = require("mysql");
+const jwt = require("jsonwebtoken");
+const EventEmitter = require("events");
 
 const cron = require("node-cron");
 const { addDays, format, isSunday } = require("date-fns");
@@ -15,6 +172,9 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+const presentDate = new Date();
+
+// Mysql Database Connection
 const connection = mysql.createConnection({
   host: "bavbwnskgspsg4hoezuh-mysql.services.clever-cloud.com",
   database: "bavbwnskgspsg4hoezuh",
@@ -30,7 +190,65 @@ connection.connect((err) => {
   }
   console.log("Connected to database as id " + connection.threadId);
 
-  // const createTablesQuery = `DROP TABLE followup_table`;
+  // const createTablesQuery = `SELECT * FROM   followup_table`;
+  // connection.query(createTablesQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating allleads table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log(results);
+  //   console.log("Table 'allleads' created successfully");
+  // });
+
+  // const createTablesQuery = `CREATE TABLE IF NOT EXISTS users (
+  //   id INT PRIMARY KEY AUTO_INCREMENT,
+  //   email TEXT,
+  //   password varchar(50)
+  // )`;
+  // connection.query(createTablesQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating allleads table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log("Table users  created successfully");
+  // });
+
+  // const createTablesQuery = `
+  //  SELECT * FROM users
+  // `;
+  // connection.query(createTablesQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating allleads table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log("Table users  created successfully");
+  //   console.log(results);
+  // });
+
+  // const createTablesQuery = `CREATE TABLE IF NOT EXISTS allleads (
+  //   id INT PRIMARY KEY AUTO_INCREMENT,
+  //   phoneNumber BIGINT NOT NULL DEFAULT '0000000000',
+  //   callerName VARCHAR(200) DEFAULT 'Enter Here',
+  //   patientName VARCHAR(200) DEFAULT 'Enter Here',
+  //   dateOfContact DATE,
+  //   leadChannel ENUM('Web Form', 'WhatsApp', 'Call', 'Just Dial', 'Walk In', 'Referral', 'GMB', 'Social Media', 'YouTube'),
+  //   campaign ENUM('Organic', 'Op', 'PET CT', 'Biopsy', 'Surgery', 'Influencer', 'Pediatric'),
+  //   coachName ENUM('Mustafa', 'Rani', 'Ruthvik'),
+  //   age INT,
+  //   gender ENUM('Male', 'Female', 'Others'),
+  //   typeOfCancer VARCHAR(200),
+  //   location TEXT,
+  //   email TEXT,
+  //   relationsToPatient TEXT,
+  //   coachNotes TEXT,
+  //   inboundOutbound TEXT,
+  //   relevant BOOLEAN DEFAULT 0,
+  //   interested BOOLEAN DEFAULT 1,
+  //   conv BOOLEAN DEFAULT 0,
+  //   preOp BOOLEAN DEFAULT 0,
+  //   level ENUM('Very Hot', 'Hot', 'Cold', 'Closed'),
+  //   stage ENUM('Lead', 'Op', 'Diag', 'Ip')
+  // )`;
   // connection.query(createTablesQuery, (error, results, fields) => {
   //   if (error) {
   //     console.error("Error creating allleads table: " + error.stack);
@@ -39,54 +257,22 @@ connection.connect((err) => {
   //   console.log("Table 'allleads' created successfully");
   // });
 
-  const createTablesQuery = `CREATE TABLE IF NOT EXISTS allleads (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    phoneNumber BIGINT NOT NULL DEFAULT '0000000000',
-    callerName VARCHAR(200) DEFAULT 'Enter Here',
-    patientName VARCHAR(200) DEFAULT 'Enter Here',
-    dateOfContact DATE,
-    leadChannel ENUM('Web Form', 'WhatsApp', 'Call', 'Just Dial', 'Walk In', 'Referral', 'GMB', 'Social Media', 'YouTube'),
-    campaign ENUM('Organic', 'Op', 'PET CT', 'Biopsy', 'Surgery', 'Influencer', 'Pediatric'),
-    coachName ENUM('Mustafa', 'Rani', 'Ruthvik'),
-    age INT,
-    gender ENUM('Male', 'Female', 'Others'),
-    typeOfCancer VARCHAR(200),
-    location TEXT,
-    email TEXT,
-    relationsToPatient TEXT,
-    coachNotes TEXT,
-    inboundOutbound TEXT,
-    relevant BOOLEAN DEFAULT 0,
-    interested BOOLEAN DEFAULT 1,
-    conv BOOLEAN DEFAULT 0,
-    preOp BOOLEAN DEFAULT 0,
-    level ENUM('Very Hot', 'Hot', 'Cold', 'Closed'),
-    stage ENUM('Lead', 'Op', 'Diag', 'Ip')
-  )`;
-  connection.query(createTablesQuery, (error, results, fields) => {
-    if (error) {
-      console.error("Error creating allleads table: " + error.stack);
-      return;
-    }
-    console.log("Table 'allleads' created successfully");
-  });
-
-  const createFollowupTableQuery = `CREATE TABLE IF NOT EXISTS followup_table (
-    leadId INT NOT NULL,
-    followupId INT,
-    leadStage TEXT,
-    time TIME DEFAULT '09:30:00',
-    date DATE,
-    status ENUM('Scheduled', 'Missed', 'Done', 'Cancelled'),
-    coachNotes TEXT
-  )`;
-  connection.query(createFollowupTableQuery, (error, results, fields) => {
-    if (error) {
-      console.error("Error creating followup_table: " + error.stack);
-      return;
-    }
-    console.log("Table 'followup_table' created successfully");
-  });
+  // const createFollowupTableQuery = `CREATE TABLE IF NOT EXISTS followup_table (
+  //   leadId INT NOT NULL,
+  //   followupId INT,
+  //   leadStage TEXT,
+  //   time TIME DEFAULT '09:30:00',
+  //   date DATE,
+  //   status ENUM('Scheduled', 'Missed', 'Done', 'Cancelled'),
+  //   coachNotes TEXT
+  // )`;
+  // connection.query(createFollowupTableQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating followup_table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log("Table 'followup_table' created successfully");
+  // });
 
   // const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
   //    coachName, age, gender, typeOfcancer, location, email, relationsToPatient, coachNotes, inboundOutbound, relevant,
@@ -105,8 +291,55 @@ connection.connect((err) => {
   // });
 });
 
+const authenticateToken = (request, response, next) => {
+  let jwtToken;
+  const authHeader = request.headers["authorization"];
+  if (authHeader !== undefined) {
+    jwtToken = authHeader.split(" ")[1];
+  }
+  if (jwtToken === undefined) {
+    response.status(401);
+    response.send("Invalid JWT Token");
+  } else {
+    jwt.verify(jwtToken, "token", async (error, payload) => {
+      if (error) {
+        response.status(401);
+        response.send("Invalid JWT Token");
+      } else {
+        next();
+      }
+    });
+  }
+};
+
+app.post("/signin", async (req, res) => {
+  const { email, password } = req.body;
+  console.log(req.body);
+  try {
+    const findEmailExistsOrNot = await executeQuery(
+      `SELECT * FROM users WHERE email = '${email}'`
+    );
+
+    if (findEmailExistsOrNot.length > 0) {
+      if (findEmailExistsOrNot[0].password === password) {
+        const payload = {
+          email: findEmailExistsOrNot[0].email,
+        };
+        const jwtToken = jwt.sign(payload, "token");
+        res.status(200).send({ token: jwtToken });
+      } else {
+        res.status(400).send({ message: "Invalid Password" });
+      }
+    } else {
+      res.status(400).send({ message: "Invalid Email" });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+});
+
 // Route to get leads
-app.get("/get-leads", async (req, res) => {
+app.get("/get-leads", authenticateToken, async (req, res) => {
   try {
     const rows = await executeQuery(`SELECT * FROM allleads ORDER BY id DESC `);
 
@@ -143,7 +376,7 @@ app.get("/get-leads", async (req, res) => {
   }
 });
 
-app.get("/patiens/:id", async (req, res) => {
+app.get("/patiens/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     const getUserDetails = await executeQuery(
@@ -160,7 +393,7 @@ app.get("/patiens/:id", async (req, res) => {
   }
 });
 
-app.get("/get-specific-key/:id/:key", async (req, res) => {
+app.get("/get-specific-key/:id/:key", authenticateToken, async (req, res) => {
   const { id, key } = req.params;
   try {
     const getUserDetails = await executeQuery(
@@ -183,7 +416,7 @@ app.get("/get-specific-key/:id/:key", async (req, res) => {
 });
 
 // Route to add The New Lead
-app.post("/add-lead", async (req, res) => {
+app.post("/add-lead", authenticateToken, async (req, res) => {
   const {
     phoneNumber,
     callerName,
@@ -208,12 +441,6 @@ app.post("/add-lead", async (req, res) => {
     dateOfContact,
   } = req.body;
 
-  let addOneDay = new Date(dateOfContact);
-  addOneDay.setDate(addOneDay.getDate() + 1);
-  if (addOneDay.getDay() === 0) {
-    addOneDay.setDate(addOneDay.getDate() + 1);
-  }
-
   try {
     const rows = await executeQuery(`
         INSERT INTO allleads (phoneNumber, callerName, campaign, age,  coachName, conv,
@@ -224,9 +451,7 @@ app.post("/add-lead", async (req, res) => {
            phoneNumber
          )}, '${callerName}','${campaign}', ${age},   '${coachName}',  '${conv}',
          '${email}', '${gender}', '${inboundOutbound}', '${interested}', '${coachNotes}', '${leadChannel}', '${level}', '${location}', '${patientName}',
-         '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', '${formatDate(
-      addOneDay
-    )}'
+         '${preOp}', '${relationsToPatient}', '${relevant}', 'Lead',  '${typeOfCancer}', '${dateOfContact}'
         );
       `);
     res.send({ message: "New Lead Added Successfully" });
@@ -235,7 +460,7 @@ app.post("/add-lead", async (req, res) => {
   }
 });
 
-app.put("/update-lead", async (req, res) => {
+app.put("/update-lead", authenticateToken, async (req, res) => {
   let { field, id, value, followupId } = req.body;
 
   async function updateEachCell() {
@@ -269,8 +494,9 @@ app.put("/update-lead", async (req, res) => {
   }
 });
 
-app.put("/update-followup-lead", async (req, res) => {
+app.put("/update-followup-lead", authenticateToken, async (req, res) => {
   const { field, id, value, followupId, leadStage } = req.body;
+  console.log(req.body, "update");
   try {
     if (field === "date") {
       const getAllLeadsValues = await executeQuery(
@@ -318,6 +544,7 @@ app.put("/update-followup-lead", async (req, res) => {
               id
             )} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
       res.status(200).send("Lead updated successfully");
+      console.log(updateValue);
     }
   } catch (err) {
     res.status(500).send("Failed to update lead");
@@ -325,11 +552,11 @@ app.put("/update-followup-lead", async (req, res) => {
 });
 
 // Route to add the follow-up
-app.post("/add-followup", async (req, res) => {
+app.post("/add-followup", authenticateToken, async (req, res) => {
   const { id, stage } = req.body;
   let currentDate = new Date();
   currentDate.setDate(currentDate.getDate() + 1);
-  if (currentDate.getDay() === "0") {
+  if (currentDate.getDay() === 0) {
     currentDate.setDate(currentDate.getDate() + 1);
   }
   let followupDates = [formatDate(currentDate)];
@@ -390,17 +617,23 @@ app.post("/add-followup", async (req, res) => {
         followupDates.push(nextBusinessDay);
       }
 
+      console.log(followupDates);
+
       const values = followupDates.map(
         (each, index) =>
           `(${id}, ${index + 1}, '${stage}', '${each}', 'Scheduled', 'default')`
       );
 
       const sql = await executeQuery(`
-                INSERT INTO followup_table (
-                    leadId, followupId,  leadStage, date, status, coachNotes
-                )
-                VALUES ${values}
-            `);
+    INSERT INTO followup_table (
+        leadId, followupId,  leadStage, date, status, coachNotes
+    )
+    VALUES ${values.join(",")}
+`);
+      const getFollowupData = await executeQuery(
+        `SELECT * FROM followup_table WHERE leadId = ${id}`
+      );
+      console.log(getFollowupData);
       res
         .status(200)
         .json({ message: "Follow-up records inserted successfully" });
@@ -418,7 +651,7 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
-app.get("/patient-followups/:id", async (req, res) => {
+app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
   const { id } = req.params;
   try {
     const sql = await executeQuery(
@@ -441,11 +674,10 @@ app.get("/patient-followups/:id", async (req, res) => {
   }
 });
 
-app.get("/dashboard-followups", async (req, res) => {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  const dateConvert = formatDate(date);
-  const getTime = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+app.get("/dashboard-followups", authenticateToken, async (req, res) => {
+  // date.setDate(date.getDate());
+  const dateConvert = formatDate(presentDate);
+  const getTime = `${presentDate.getHours()}:${presentDate.getMinutes()}:${presentDate.getSeconds()}`;
   try {
     const fetchDetails = await executeQuery(` SELECT 
         allleads.id, 
@@ -466,11 +698,11 @@ app.get("/dashboard-followups", async (req, res) => {
     ON 
         allleads.id = followup_table.leadId
     WHERE  
-       DATE = '${dateConvert}'
-        AND time <= '${getTime}' 
+      followup_table.date = '${dateConvert}'
+        AND followup_table.time <= '${getTime}' 
         AND status != 'Done' AND status != 'Cancelled'
         AND allleads.level != 'Closed'
-    ORDER BY 
+        ORDER BY 
         CASE allleads.level 
             WHEN 'Very Hot' THEN 1 
             WHEN 'Hot' THEN 2 
@@ -479,12 +711,7 @@ app.get("/dashboard-followups", async (req, res) => {
             ELSE 5  
         END
     `);
-
-    if (fetchDetails.length > 0) {
-      if (fetchDetails[0].id !== null) {
-        res.status(200).send(fetchDetails);
-      }
-    }
+    res.status(200).send(fetchDetails);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -503,7 +730,7 @@ function executeQuery(sql) {
 }
 
 // Route get all followups
-app.get("/day-wise-followups/:date", async (req, res) => {
+app.get("/day-wise-followups/:date", authenticateToken, async (req, res) => {
   const { date } = req.params;
   try {
     const fetchDetails = await executeQuery(`SELECT 
@@ -533,8 +760,8 @@ async function deleteFolloups() {
     const response = await executeQuery(`
         UPDATE followup_table
         SET status='Missed'
-        WHERE DATE(date) = CURDATE() AND  status = "Scheduled"`);
-  } catch (error) {
+        WHERE DATE(date) = DATE_ADD(CURDATE()) AND  status = "Scheduled"`);
+  } catch (e) {
     res.status(500).send("Failed To Update Followup Table");
   }
 }
@@ -548,3 +775,10 @@ cron.schedule(
     scheduled: true,
   }
 );
+
+const emitter = new EventEmitter();
+
+emitter.on("error", (err) => {
+  // Handle the error here
+  console.error("An error occurred:", err);
+});
