@@ -701,7 +701,7 @@ app.get("/dashboard-followups", authenticateToken, async (req, res) => {
         allleads.id = followup_table.leadId
         WHERE  
       followup_table.date = '${dateConvert}'
-        
+      AND followup_table.time <= '${getTime}' 
     `);
       console.log(fetchDetails)
     res.status(200).send(fetchDetails);
