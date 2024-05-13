@@ -676,9 +676,10 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
 
 app.get("/dashboard-followups", authenticateToken, async (req, res) => {
   // date.setDate(date.getDate());
-  console.log(presentDate)
-  const dateConvert = formatDate(presentDate);
-  const getTime = `${presentDate.getHours()}:${presentDate.getMinutes()}:${presentDate.getSeconds()}`;
+  const currentDate = new Date()
+  console.log(currentDate)
+  const dateConvert = formatDate(currentDate);
+  const getTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
   console.log(getTime);
   try {
     const fetchDetails = await executeQuery(` SELECT 
