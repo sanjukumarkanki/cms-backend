@@ -676,10 +676,11 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
 
 app.get("/dashboard-followups", authenticateToken, async (req, res) => {
   // date.setDate(date.getDate());
-  const currentDate = new Date()
-  console.log(currentDate)
-  const dateConvert = formatDate(currentDate);
-  const getTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+const istHours = presentDate.toLocaleString('en-IN', { hour: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+const istMinutes = presentDate.toLocaleString('en-IN', { minute: '2-digit', timeZone: 'Asia/Kolkata' });
+const istSeconds = presentDate.toLocaleString('en-IN', { second: '2-digit', timeZone: 'Asia/Kolkata' });
+
+const getTime = `${istHours}:${istMinutes}:${istSeconds}`;
   console.log(getTime);
   try {
     const fetchDetails = await executeQuery(` SELECT 
