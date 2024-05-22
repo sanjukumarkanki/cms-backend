@@ -476,7 +476,7 @@ app.post("/add-followup", authenticateToken, async (req, res) => {
       for (let i = 1; i <= 3; i++) {
         // It will access the followupdates last index value
         const today = followupDates.at(-1);
-        const nextBusinessDay = getNextBusinessDay(today, 1);
+        const nextBusinessDay = getNextBusinessDay(today, daysDifferance);
         //to append to followup date array at the end
         followupDates.push(nextBusinessDay);
       }
