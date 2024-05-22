@@ -1,14 +1,8 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-<<<<<<< HEAD
 const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
-=======
-const mysql = require("mysql");
-const jwt = require("jsonwebtoken");
-const EventEmitter = require("events");
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
 
 const cron = require("node-cron");
 const { addDays, format, isSunday } = require("date-fns");
@@ -34,7 +28,6 @@ const connection = mysql.createConnection({
 });
 
 connection.connect((err) => {
-<<<<<<< HEAD
   try {
     if (err) {
       console.error("Error connecting to database: " + err.stack);
@@ -194,163 +187,6 @@ app.post("/signin", async (req, res) => {
     } else {
       res.status(400).send({ message: "Invalid Email" });
     }
-=======
-  if (err) {
-    console.error("Error connecting to database: " + err.stack)
-    return;
-  }
-  console.log("Connected to database as id " + connection.threadId);
-
-  // const createTablesQuery = `SELECT * FROM   followup_table`;
-  // connection.query(createTablesQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating allleads table: " + error.stack);
-  //     return;
-  //   }
-  //   console.log(results);
-  //   console.log("Table 'allleads' created successfully");
-  // });
-
-  // const createTablesQuery = `CREATE TABLE IF NOT EXISTS users (
-  //   id INT PRIMARY KEY AUTO_INCREMENT,
-  //   email TEXT,
-  //   password varchar(50)
-  // )`;
-  // connection.query(createTablesQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating allleads table: " + error.stack);
-  //     return;
-  //   }
-  //   console.log("Table users  created successfully");
-  // });
-
-  // const createTablesQuery = `
-  //  SELECT * FROM users
-  // `;
-  // connection.query(createTablesQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating allleads table: " + error.stack);
-  //     return;
-  //   }
-  //   console.log("Table users  created successfully");
-  //   console.log(results);
-  // });
-
-  // const createTablesQuery = `CREATE TABLE IF NOT EXISTS allleads (
-  //   id INT PRIMARY KEY AUTO_INCREMENT,
-  //   phoneNumber BIGINT NOT NULL DEFAULT '0000000000',
-  //   callerName VARCHAR(200) DEFAULT 'Enter Here',
-  //   patientName VARCHAR(200) DEFAULT 'Enter Here',
-  //   dateOfContact DATE,
-  //   leadChannel ENUM('Web Form', 'WhatsApp', 'Call', 'Just Dial', 'Walk In', 'Referral', 'GMB', 'Social Media', 'YouTube'),
-  //   campaign ENUM('Organic', 'Op', 'PET CT', 'Biopsy', 'Surgery', 'Influencer', 'Pediatric'),
-  //   coachName ENUM('Mustafa', 'Rani', 'Ruthvik'),
-  //   age INT,
-  //   gender ENUM('Male', 'Female', 'Others'),
-  //   typeOfCancer VARCHAR(200),
-  //   location TEXT,
-  //   email TEXT,
-  //   relationsToPatient TEXT,
-  //   coachNotes TEXT,
-  //   inboundOutbound TEXT,
-  //   relevant BOOLEAN DEFAULT 0,
-  //   interested BOOLEAN DEFAULT 1,
-  //   conv BOOLEAN DEFAULT 0,
-  //   preOp BOOLEAN DEFAULT 0,
-  //   level ENUM('Very Hot', 'Hot', 'Cold', 'Closed'),
-  //   stage ENUM('Lead', 'Op', 'Diag', 'Ip')
-  // )`;
-  // connection.query(createTablesQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating allleads table: " + error.stack);
-  //     return;
-  //   }
-  //   console.log("Table 'allleads' created successfully");
-  // });
-
-  // const createFollowupTableQuery = `CREATE TABLE IF NOT EXISTS followup_table (
-  //   leadId INT NOT NULL,
-  //   followupId INT,
-  //   leadStage TEXT,
-  //   time TIME DEFAULT '09:30:00',
-  //   date DATE,
-  //   status ENUM('Scheduled', 'Missed', 'Done', 'Cancelled'),
-  //   coachNotes TEXT
-  // )`;
-  // connection.query(createFollowupTableQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating followup_table: " + error.stack);
-  //     return;
-  //   }
-  //   console.log("Table 'followup_table' created successfully");
-  // });
-
-  // const insertQuery = `INSERT INTO allleads (phoneNumber,  callerName, patientName,  leadChannel, campaign,
-  //    coachName, age, gender, typeOfcancer, location, email, relationsToPatient, coachNotes, inboundOutbound, relevant,
-  //     interested, conv, preOp, level, stage) VALUES
-  //    (1234567890,  'John Doe', 'Alice Doe',  'Web Form', 'Organic', 'Rani', 45, 'Female', 'Breast Cancer', 'New York', 'alice@example.com', 'Spouse', 'Follow up after surgery', 'Inbound', true, true, true, true, 'very hot', 'LEAD'),
-  //    (2345678901,  'Jane Smith', 'Bob Smith',  'WhatsApp', 'PET CT', 'Mustafa', 60, 'Male', 'Prostate Cancer', 'Los Angeles', 'bob@example.com', 'Sibling', 'Interested in treatment options', 'Outbound', true, true, false, false, 'Hot', 'Op'),
-  //    (3456789012,  'Emily Brown', 'Chris Brown',  'CALL', 'Biopsy', 'Ruthvik', 55, 'Male', 'Lung Cancer', 'Chicago', 'chris@example.com', 'Child', 'Needs further tests', 'Inbound', false, true, false, true, 'cold', 'Diag'),
-  //    (4567890123,  'Michael Johnson', 'David Johnson',  'Just Dial', 'Biopsy', 'Rani',  70, 'Male', 'Colorectal Cancer', 'Houston', 'david@example.com', 'Friend', 'Not sure about treatment options', 'Outbound', true, false, false, false, 'closed', 'IP');
-  //    `;
-  // connection.query(insertQuery, (error, results, fields) => {
-  //   if (error) {
-  //     console.error("Error creating tables: " + error.stack);
-  //     return;
-  //   }
-  //   console.log("Tables created successfully");
-  // });
-});
-
-// The middileware for every Api first it will check authentication than only excutes the api
-const authenticateToken = (request, response, next) => {
-  let jwtToken;
-  // To get token based on Headers authorization
-  const authHeader = request.headers["authorization"];
-  if (authHeader !== undefined) {
-    jwtToken = authHeader.split(" ")[1];
-  }
-
-  if (jwtToken === undefined) {
-    response.status(401);
-    response.send("Invalid JWT Token");
-  } else {
-    // If the jwt token is verifed than it goes to next api other wise it will through unauthorized erro
-    jwt.verify(jwtToken, "token", async (error, payload) => {
-      if (error) {
-        response.status(401);
-        response.send("Invalid JWT Token");
-      } else {
-        next();
-      }
-    });
-  }
-};
-
-app.post("/signin", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    const findEmailExistsOrNot = await executeQuery(
-      `SELECT * FROM users WHERE email = '${email}'`
-    );
-    // To check the current email already exists or not
-    if (findEmailExistsOrNot.length > 0) {
-      // It will check the stored password and  current user entered password
-      if (findEmailExistsOrNot[0].password === password) {
-        // If the password mateched than the jwt token will be genrated here
-        const payload = {
-          email: findEmailExistsOrNot[0].email,
-        };
-        // To check authentication in frontend and backend this part will genrate the jwt token
-        const jwtToken = jwt.sign(payload, "token");
-        res.status(200).send({ token: jwtToken });
-      } else {
-        res.status(400).send({ message: "Invalid Password" });
-      }
-    } else {
-      res.status(400).send({ message: "Invalid Email" });
-    }
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
   } catch (e) {
     console.log(e);
   }
@@ -364,33 +200,8 @@ app.get("/get-leads", authenticateToken, async (req, res) => {
     const convertedArray = rows.map((each) => {
       const date = new Date(each.dateOfContact);
       return {
-<<<<<<< HEAD
         ...each,
         dateOfContact: formatDate(each.dateOfContact),
-=======
-        id: each.id,
-        phoneNumber: each.phoneNumber,
-        callerName: each.callerName,
-        patientName: each.patientName,
-        dateOfContact: formatDate(date), // Use the formatted date
-        leadChannel: each.leadChannel,
-        campaign: each.campaign,
-        coachName: each.coachName,
-        age: each.age,
-        gender: each.gender,
-        typeOfCancer: each.typeOfCancer,
-        location: each.location,
-        email: each.email,
-        relationsToPatient: each.relationsToPatient,
-        coachNotes: each.coachNotes,
-        inboundOutbound: each.inboundOutbound,
-        relevant: each.relevant,
-        interested: each.interested,
-        conv: each.conv,
-        preOp: each.preOp,
-        level: each.level,
-        stage: each.stage,
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
       };
     });
     res.json(convertedArray);
@@ -580,20 +391,12 @@ app.put("/update-followup-lead", authenticateToken, async (req, res) => {
       res.status(200).send({ message: "Sucessfully added" });
     } else {
       // To update the followup values directly into followup_table
-<<<<<<< HEAD
       const updateValue = await executeQuery(`UPDATE followup_table
-=======
-      const updateValue = await executeQuery(` UPDATE followup_table
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
             SET ${field}='${value}'
             WHERE leadId = ${parseInt(
               id
             )} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
       res.status(200).send("Lead updated successfully");
-<<<<<<< HEAD
-=======
-      console.log(updateValue);
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     }
   } catch (err) {
     res.status(500).send("Failed to update lead");
@@ -716,19 +519,9 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
     );
     // To convert the followup date into YYYY-MM-DD, to add the extra value fuLead
     const convertedArray = sql.map((each, index) => ({
-<<<<<<< HEAD
       ...each,
       fuLead: `${each.leadStage} ${each.followupId}`,
       date: formatDate(each.date),
-=======
-      fuLead: `${each.leadStage} ${each.followupId}`,
-      leadId: each.leadId,
-      leadStage: each.leadStage,
-      followupId: each.followupId,
-      date: formatDate(each.date),
-      coachNotes: each.coachNotes,
-      status: each.status,
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     }));
 
     res.status(200).json(convertedArray);
@@ -738,34 +531,19 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
 });
 
 app.get("/dashboard-followups", authenticateToken, async (req, res) => {
-<<<<<<< HEAD
   const currentDate = new Date();
   const dateConvert = formatDate(currentDate);
   // const getTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
   const istHours = currentDate.toLocaleString("en-IN", {
-=======
-  // date.setDate(date.getDate());
-  const dateConvert = formatDate(presentDate);
-  // const getTime = `${presentDate.getHours()}:${presentDate.getMinutes()}:${presentDate.getSeconds()}`;
-  const istHours = presentDate.toLocaleString("en-IN", {
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     hour: "2-digit",
     hour12: false,
     timeZone: "Asia/Kolkata",
   });
-<<<<<<< HEAD
   const istMinutes = currentDate.toLocaleString("en-IN", {
     minute: "2-digit",
     timeZone: "Asia/Kolkata",
   });
   const istSeconds = currentDate.toLocaleString("en-IN", {
-=======
-  const istMinutes = presentDate.toLocaleString("en-IN", {
-    minute: "2-digit",
-    timeZone: "Asia/Kolkata",
-  });
-  const istSeconds = presentDate.toLocaleString("en-IN", {
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     second: "2-digit",
     timeZone: "Asia/Kolkata",
   });
@@ -793,33 +571,19 @@ app.get("/dashboard-followups", authenticateToken, async (req, res) => {
     WHERE
       followup_table.date = '${dateConvert}'
         AND followup_table.time <= '${getTime}'
-<<<<<<< HEAD
         AND status != 'Done' AND status != 'Cancelled' AND status != 'Missed'
-=======
-        AND status != 'Done' AND status != 'Cancelled'
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
         AND allleads.level != 'Closed'
         ORDER BY
         CASE allleads.level
             WHEN 'Very Hot' THEN 1
             WHEN 'Hot' THEN 2
             WHEN 'Cold' THEN 3
-<<<<<<< HEAD
             ELSE 4
         END
     `);
     return res.status(200).send(fetchDetails);
   } catch (err) {
     return res.status(400).send(err);
-=======
-            WHEN 'Closed' THEN 4
-            ELSE 5
-        END
-    `);
-    res.status(200).send(fetchDetails);
-  } catch (err) {
-    res.status(400).send(err);
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
   }
 });
 
@@ -837,20 +601,10 @@ app.get("/day-wise-followups/:date", authenticateToken, async (req, res) => {
         ;`);
     // To change the date format Into YYYY-MM-DD
     const convertedArray = fetchDetails.map((each) => ({
-<<<<<<< HEAD
       ...each,
       date: formatDate(each.date),
       stage: `${each.stage} ${each.followupId}`,
       id: each.id,
-=======
-      id: each.id,
-      callerName: each.callerName,
-      coachNotes: each.coachNotes,
-      followupId: each.followupId,
-      date: formatDate(each.date),
-      patientName: each.patientName,
-      stage: `${each.stage} ${each.followupId}`,
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     }));
     res.status(200).send(convertedArray);
   } catch (err) {
@@ -913,16 +667,11 @@ function executeQuery(sql) {
   });
 }
 
-<<<<<<< HEAD
 async function deleteFolloups(req, res) {
   try {
     const currentDate = new Date();
     // currentDate.setDate(currentDate.getDate() - 1);
     const dateConvert = formatDate(currentDate);
-=======
-async function deleteFolloups() {
-  try {
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
     /*
      At the end of the day the current day scheduled 
      followups still in scheduled than it will update that
@@ -930,11 +679,7 @@ async function deleteFolloups() {
     const response = await executeQuery(`
         UPDATE followup_table
         SET status='Missed'
-<<<<<<< HEAD
         WHERE DATE_FORMAT(followup_table.date, '%Y-%m-%d') LIKE '${dateConvert}'  AND  status LIKE 'Scheduled'`);
-=======
-        WHERE DATE(date) = DATE_ADD(CURDATE()) AND  status = "Scheduled"`);
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
   } catch (e) {
     res.status(500).send("Failed To Update Followup Table");
   }
@@ -942,11 +687,7 @@ async function deleteFolloups() {
 
 // CRON schedule to assign a task that automatically call the function on every day night 11 : 59
 cron.schedule(
-<<<<<<< HEAD
   "50 11 * * *",
-=======
-  "54 09 * * *",
->>>>>>> 80db0298eb91b2ceae4ac586c8f64c92cbd12e82
   () => {
     deleteFolloups();
   },
