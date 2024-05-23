@@ -34,6 +34,16 @@ connection.connect((err) => {
       return;
     }
     console.log("Connected to database as id " + connection.threadId);
+
+    // const createTablesQuery = `DROP TABLE allleads`;
+    // connection.query(createTablesQuery, (error, results, fields) => {
+    //   if (error) {
+    //     console.error("Error creating allleads table: " + error.stack);
+    //     return;
+    //   }
+    //   console.log(results);
+    //   console.log("Table 'allleads' created successfully");
+    // });
   } catch (err) {
     console.log(err);
   }
@@ -503,6 +513,65 @@ app.post("/add-followup", authenticateToken, async (req, res) => {
   }
 });
 
+app.put("/update-followup-dates", async (req, res) => {
+  try {
+    const { field, id, value, followupId, leadStage, changeDate } = req.body;
+    console.log(req.body, "dfdf");
+    const getallLEadFollowup = await executeQuery(
+      `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId} AND 4`
+    );
+    if (followupId !== 4) {
+      const followupDates = [changeDate];
+      const differanceDays = leadStage === "Ip" ? 14 : 1;
+      console.log(followupDates, differanceDays, "dfdf");
+      // To getNext businness days with mentiond getallLEadFollowup variable
+      function getNextBusinessDay(startDate, days) {
+        let currentDate = startDate;
+        let count = 0;
+        while (count < days) {
+          currentDate = addDays(currentDate, differanceDays);
+          if (!isSunday(currentDate)) {
+            count++;
+          }
+        }
+
+        return format(currentDate, "yyyy-MM-dd");
+      }
+      // To iterate based on length of the getallLEadFollowup variable
+      for (let i = 1; i <= getallLEadFollowup.length - 1; i++) {
+        const today = followupDates.at(-1);
+        const nextBusinessDay = getNextBusinessDay(today, 1);
+        followupDates.push(nextBusinessDay);
+      }
+
+      // To update all the retirved followup dates
+      const updateQueries = followupDates.map(
+        (date, index) =>
+          `UPDATE followup_table SET date = '${date}'  WHERE leadId = ${id} AND followupId = ${
+            followupId + index
+          }`
+      );
+
+      // Execute the update queries
+      for (const query of updateQueries) {
+        await executeQuery(query);
+      }
+    } else {
+      const updateStatusToDone = await executeQuery(`UPDATE followup_table
+      SET ${field}='${value}'
+      WHERE leadId = ${parseInt(
+        id
+      )} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
+    }
+
+    res.status(200).send({ message: "Sucessfully added" });
+  } catch (err) {
+    return res
+      .status(500)
+      .send({ message: "Failed to update following dates" });
+  }
+});
+
 function formatDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -523,6 +592,7 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
       fuLead: `${each.leadStage} ${each.followupId}`,
       date: formatDate(each.date),
     }));
+    console.log(sql, convertedArray);
 
     res.status(200).json(convertedArray);
   } catch (err) {
