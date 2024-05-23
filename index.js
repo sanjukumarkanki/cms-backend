@@ -5,8 +5,7 @@ const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 
 const cron = require("node-cron");
-const { addDays, format, isSunday } = require("date-fns");
-
+const { addDays, format, isSunday } = require("date-fns")
 app.use(express.json());
 app.use(cors());
 
