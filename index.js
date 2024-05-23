@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const mysql = require("mysql2");
+const mysql = require("mysql");
 const jwt = require("jsonwebtoken");
 
 const cron = require("node-cron");
@@ -33,19 +33,19 @@ connection.connect((err) => {
       return;
     }
     console.log("Connected to database as id " + connection.threadId);
-
-    // const createTablesQuery = `DROP TABLE allleads`;
-    // connection.query(createTablesQuery, (error, results, fields) => {
-    //   if (error) {
-    //     console.error("Error creating allleads table: " + error.stack);
-    //     return;
-    //   }
-    //   console.log(results);
-    //   console.log("Table 'allleads' created successfully");
-    // });
   } catch (err) {
     console.log(err);
   }
+
+  // const createTablesQuery = `DROP TABLE allleads`;
+  // connection.query(createTablesQuery, (error, results, fields) => {
+  //   if (error) {
+  //     console.error("Error creating allleads table: " + error.stack);
+  //     return;
+  //   }
+  //   console.log(results);
+  //   console.log("Table 'allleads' created successfully");
+  // });
 
   // const createTablesQuery = `SELECT * FROM   followup_table`;
   // connection.query(createTablesQuery, (error, results, fields) => {
