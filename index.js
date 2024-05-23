@@ -402,12 +402,11 @@ app.put("/update-followup-lead", authenticateToken, async (req, res) => {
       // To update the followup values directly into followup_table
       const updateValue = await executeQuery(`UPDATE followup_table
             SET ${field}='${value}'
-            WHERE leadId = ${parseInt(
-              id
-            )} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
-      res.status(200).send("Lead updated successfully");
+            WHERE leadId = ${id} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
+      return res.status(200).send({ message: "Lead updated successfully" });
     }
   } catch (err) {
+    console.log(errr);
     res.status(500).send("Failed to update lead");
   }
 });
@@ -493,7 +492,7 @@ app.post("/add-followup", authenticateToken, async (req, res) => {
       // To insert the followups into followup table by running map query
       const values = followupDates.map(
         (each, index) =>
-          `(${id}, ${index + 1}, '${stage}', '${each}', 'Scheduled', 'default')`
+          `(${id}, ${index + 1}, '${stage}', '${each}', 'Scheduled', 'Default')`
       );
 
       const sql = await executeQuery(`
@@ -515,9 +514,14 @@ app.post("/add-followup", authenticateToken, async (req, res) => {
 app.put("/update-followup-dates", async (req, res) => {
   try {
     const { field, id, value, followupId, leadStage, changeDate } = req.body;
+    // To get all Lead Id followups
     const getallLEadFollowup = await executeQuery(
-      `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId} AND 4`
+      `SELECT * FROM followup_table WHERE leadId = ${id} AND leadStage = '${leadStage}' AND followupId between ${
+        followupId + 1
+      } AND 4`
     );
+
+    // If it was the last followup than it will direct update the coachNotes otherwise update the remiang followup dates
     if (followupId !== 4) {
       const followupDates = [changeDate];
       const differanceDays = leadStage === "Ip" ? 14 : 1;
@@ -545,7 +549,7 @@ app.put("/update-followup-dates", async (req, res) => {
       const updateQueries = followupDates.map(
         (date, index) =>
           `UPDATE followup_table SET date = '${date}'  WHERE leadId = ${id} AND followupId = ${
-            followupId + index
+            followupId + index + 1
           }`
       );
 
@@ -553,14 +557,14 @@ app.put("/update-followup-dates", async (req, res) => {
       for (const query of updateQueries) {
         await executeQuery(query);
       }
+      const updateStatusToDone = await executeQuery(`UPDATE followup_table
+      SET status='Done'
+      WHERE leadId = ${id} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
     } else {
       const updateStatusToDone = await executeQuery(`UPDATE followup_table
-      SET ${field}='${value}'
-      WHERE leadId = ${parseInt(
-        id
-      )} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
+      SET status='Done'
+      WHERE leadId = ${id} AND followupId = ${followupId} AND leadStage = '${leadStage}'`);
     }
-
     res.status(200).send({ message: "Sucessfully added" });
   } catch (err) {
     return res
