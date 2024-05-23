@@ -5,7 +5,7 @@ const mysql = require("mysql2");
 const jwt = require("jsonwebtoken");
 
 const cron = require("node-cron");
-const { addDays, format, isSunday } = require("date-fns")
+const { addDays, format, isSunday } = require("date-fns");
 app.use(express.json());
 app.use(cors());
 
@@ -515,14 +515,12 @@ app.post("/add-followup", authenticateToken, async (req, res) => {
 app.put("/update-followup-dates", async (req, res) => {
   try {
     const { field, id, value, followupId, leadStage, changeDate } = req.body;
-    console.log(req.body, "dfdf");
     const getallLEadFollowup = await executeQuery(
       `SELECT * FROM followup_table WHERE leadId = ${id} AND followupId between ${followupId} AND 4`
     );
     if (followupId !== 4) {
       const followupDates = [changeDate];
       const differanceDays = leadStage === "Ip" ? 14 : 1;
-      console.log(followupDates, differanceDays, "dfdf");
       // To getNext businness days with mentiond getallLEadFollowup variable
       function getNextBusinessDay(startDate, days) {
         let currentDate = startDate;
@@ -591,7 +589,6 @@ app.get("/patient-followups/:id", authenticateToken, async (req, res) => {
       fuLead: `${each.leadStage} ${each.followupId}`,
       date: formatDate(each.date),
     }));
-    console.log(sql, convertedArray);
 
     res.status(200).json(convertedArray);
   } catch (err) {
